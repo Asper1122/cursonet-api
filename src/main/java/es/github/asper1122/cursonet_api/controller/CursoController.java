@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/curso")
@@ -37,5 +38,10 @@ public class CursoController implements CursoApi {
     @Override
     public Page<CursoResponseDto> findAll(int page, int size) {
         return cursoService.findAll(page, size);
+    }
+
+    @Override
+    public CursoDetailsResponseDto findById(UUID id) {
+        return cursoService.findById(id);
     }
 }

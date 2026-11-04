@@ -4,6 +4,7 @@ import es.github.asper1122.cursonet_api.dto.curso.CreateCursoDto;
 import es.github.asper1122.cursonet_api.dto.curso.CursoDetailsResponseDto;
 import es.github.asper1122.cursonet_api.dto.curso.CursoResponseDto;
 import es.github.asper1122.cursonet_api.error.AlreadyExistsException;
+import es.github.asper1122.cursonet_api.error.NotFoundException;
 import es.github.asper1122.cursonet_api.mapper.CursoMapper;
 import es.github.asper1122.cursonet_api.model.Curso;
 import es.github.asper1122.cursonet_api.repository.CursoRepository;
@@ -14,6 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +42,13 @@ public class CursoServiceImpl implements CursoService {
 
         return cursoRepository.findAll(pageable)
                 .map(CursoMapper.INSTANCE::toResponseDto);
+    }
+
+    @Override
+    public CursoDetailsResponseDto findById(UUID id) {
+        return cursoRepository.findById(id)
+                .map(CursoMapper.INSTANCE::toDetailsResponseDto)
+                .orElseThrow(() -> new NotFoundException("No se ha encontrado el curso con el id " + id));
     }
 
     private void validateCurso(CreateCursoDto createCursoDto) {

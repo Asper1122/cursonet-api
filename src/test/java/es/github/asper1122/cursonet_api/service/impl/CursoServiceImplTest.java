@@ -4,6 +4,7 @@ import es.github.asper1122.cursonet_api.dto.curso.CreateCursoDto;
 import es.github.asper1122.cursonet_api.dto.curso.CursoDetailsResponseDto;
 import es.github.asper1122.cursonet_api.dto.curso.CursoResponseDto;
 import es.github.asper1122.cursonet_api.error.AlreadyExistsException;
+import es.github.asper1122.cursonet_api.error.NotFoundException;
 import es.github.asper1122.cursonet_api.mapper.CursoMapper;
 import es.github.asper1122.cursonet_api.model.Curso;
 import es.github.asper1122.cursonet_api.repository.CursoRepository;
@@ -17,6 +18,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -93,6 +96,39 @@ class CursoServiceImplTest {
                 () -> assertNotNull(response),
                 () -> assertTrue(response.isEmpty()),
                 () -> verify(cursoRepository, times(1)).findAll(any(Pageable.class))
+        );
+    }
+
+    @Test
+    void testFindByIdOk() {
+
+        UUID cursoId = UUID.randomUUID();
+        Curso curso = CursoMapper.INSTANCE.toEntity(createCursoDto);
+        curso.setId(cursoId);
+        when(cursoRepository.findById(any(UUID.class))).thenReturn(Optional.of(curso));
+
+        CursoDetailsResponseDto response = cursoServiceImpl.findById(cursoId);
+
+        assertAll(
+                () -> assertNotNull(response),
+                () -> assertEquals(cursoId.toString(), response.id()),
+                () -> assertEquals(curso.getNombre(), response.nombre()),
+                () -> assertEquals(curso.getResumen(), response.resumen()),
+                () -> verify(cursoRepository, times(1)).findById(any(UUID.class))
+        );
+    }
+
+    @Test
+    void testFindByIdNotFound() {
+
+        UUID cursoId = UUID.randomUUID();
+        when(cursoRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrowsExactly(NotFoundException.class, () -> cursoServiceImpl.findById(cursoId));
+
+        assertAll(
+                () -> assertNotNull(exception),
+                () -> verify(cursoRepository, times(1)).findById(any(UUID.class))
         );
     }
 }

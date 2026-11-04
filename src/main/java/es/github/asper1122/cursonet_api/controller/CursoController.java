@@ -49,4 +49,10 @@ public class CursoController implements CursoApi {
     public CursoDetailsResponseDto update(UUID id, CreateCursoDto createCursoDto) {
         return cursoService.update(id, createCursoDto);
     }
+
+    @Override
+    public ResponseEntity<Void> deleteById(UUID id) {
+        cursoService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

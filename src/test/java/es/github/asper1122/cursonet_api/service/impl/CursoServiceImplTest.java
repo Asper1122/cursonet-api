@@ -214,4 +214,15 @@ class CursoServiceImplTest {
                 () -> verify(cursoRepository, times(0)).save(any(Curso.class))
         );
     }
+
+    @Test
+    void testDeleteByIdOk() {
+        UUID cursoId = UUID.randomUUID();
+
+        doNothing().when(cursoRepository).deleteById(cursoId);
+
+        cursoRepository.deleteById(cursoId);
+
+        verify(cursoRepository, times(1)).deleteById(cursoId);
+    }
 }

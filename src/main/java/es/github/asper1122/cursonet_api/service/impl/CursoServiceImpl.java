@@ -72,6 +72,12 @@ public class CursoServiceImpl implements CursoService {
                 .orElseThrow(() -> new NotFoundException(CURSO_NOT_FOUND_MESSAGE + id));
     }
 
+    @Override
+    @Transactional
+    public void deleteById(UUID id) {
+        cursoRepository.deleteById(id);
+    }
+
     private void validateCurso(CreateCursoDto createCursoDto) {
         if(cursoRepository.existsByNombre(createCursoDto.nombre())) {
             throw new AlreadyExistsException(CURSO_ALREADY_EXISTS_MESSAGE + createCursoDto.nombre());

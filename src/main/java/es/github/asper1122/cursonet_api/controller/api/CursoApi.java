@@ -194,4 +194,16 @@ public interface CursoApi {
             @PathVariable UUID id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody
             @RequestBody CreateCursoDto createCursoDto);
+
+
+    @Operation(summary = "Borrado de un curso")
+    @ApiResponse(
+            responseCode = "204",
+            description = "Se ha borrado el curso correctamente",
+            content = @Content()
+    )
+    @DeleteMapping("/{id}")
+    ResponseEntity<Void> deleteById(
+            @Parameter(in = ParameterIn.PATH, description = "Identificador del curso a eliminar")
+            @PathVariable UUID id);
 }

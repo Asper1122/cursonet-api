@@ -2,6 +2,7 @@ package es.github.asper1122.cursonet_api.service.impl;
 
 import es.github.asper1122.cursonet_api.dto.curso.CreateCursoDto;
 import es.github.asper1122.cursonet_api.dto.curso.CursoDetailsResponseDto;
+import es.github.asper1122.cursonet_api.dto.curso.CursoResponseDto;
 import es.github.asper1122.cursonet_api.error.AlreadyExistsException;
 import es.github.asper1122.cursonet_api.mapper.CursoMapper;
 import es.github.asper1122.cursonet_api.model.Curso;
@@ -11,6 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +67,32 @@ class CursoServiceImplTest {
                 () -> assertNotNull(exception),
                 () -> verify(cursoRepository, times(1)).existsByNombre(anyString()),
                 () -> verify(cursoRepository, times(0)).save(any(Curso.class))
+        );
+    }
+
+    @Test
+    void testFindAllOk() {
+        when(cursoRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(CursoMapper.INSTANCE.toEntity(createCursoDto))));
+
+        Page<CursoResponseDto> response = cursoServiceImpl.findAll(0, 10);
+        assertAll(
+                () -> assertNotNull(response),
+                () -> assertFalse(response.isEmpty()),
+                () -> assertEquals(createCursoDto.nombre(), response.getContent().getFirst().nombre()),
+                () -> verify(cursoRepository, times(1)).findAll(any(Pageable.class))
+        );
+    }
+
+    @Test
+    void testFindAllEmpty() {
+        when(cursoRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
+
+        Page<CursoResponseDto> response = cursoServiceImpl.findAll(0, 10);
+
+        assertAll(
+                () -> assertNotNull(response),
+                () -> assertTrue(response.isEmpty()),
+                () -> verify(cursoRepository, times(1)).findAll(any(Pageable.class))
         );
     }
 }

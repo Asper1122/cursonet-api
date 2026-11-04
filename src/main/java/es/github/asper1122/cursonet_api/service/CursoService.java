@@ -16,4 +16,6 @@ public interface CursoService {
     CursoDetailsResponseDto findById(UUID id);
 
     CursoDetailsResponseDto update(UUID id, CreateCursoDto createCursoDto);
+
+    void deleteById(UUID id);
 }

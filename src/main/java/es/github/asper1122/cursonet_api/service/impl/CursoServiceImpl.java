@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+import static es.github.asper1122.cursonet_api.utils.Utils.CURSO_ALREADY_EXISTS_MESSAGE;
+import static es.github.asper1122.cursonet_api.utils.Utils.CURSO_NOT_FOUND_MESSAGE;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -48,12 +51,30 @@ public class CursoServiceImpl implements CursoService {
     public CursoDetailsResponseDto findById(UUID id) {
         return cursoRepository.findById(id)
                 .map(CursoMapper.INSTANCE::toDetailsResponseDto)
-                .orElseThrow(() -> new NotFoundException("No se ha encontrado el curso con el id " + id));
+                .orElseThrow(() -> new NotFoundException(CURSO_NOT_FOUND_MESSAGE + id));
+    }
+
+    @Override
+    @Transactional
+    public CursoDetailsResponseDto update(UUID id, CreateCursoDto createCursoDto) {
+        return cursoRepository.findById(id)
+                .map(existing -> {
+                    if(!createCursoDto.nombre().equals(existing.getNombre()) &&
+                            cursoRepository.existsByNombre(createCursoDto.nombre())) {
+                        throw new AlreadyExistsException(CURSO_ALREADY_EXISTS_MESSAGE + createCursoDto.nombre());
+                    }
+
+                    Curso updated = CursoMapper.INSTANCE.toEntity(createCursoDto);
+                    updated.setId(existing.getId());
+                    return cursoRepository.save(updated);
+                })
+                .map(CursoMapper.INSTANCE::toDetailsResponseDto)
+                .orElseThrow(() -> new NotFoundException(CURSO_NOT_FOUND_MESSAGE + id));
     }
 
     private void validateCurso(CreateCursoDto createCursoDto) {
         if(cursoRepository.existsByNombre(createCursoDto.nombre())) {
-            throw new AlreadyExistsException("Ya existe el curso con nombre: " + createCursoDto.nombre());
+            throw new AlreadyExistsException(CURSO_ALREADY_EXISTS_MESSAGE + createCursoDto.nombre());
         }
     }
 }

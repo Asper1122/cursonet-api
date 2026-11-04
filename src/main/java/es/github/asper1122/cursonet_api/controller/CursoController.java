@@ -44,4 +44,9 @@ public class CursoController implements CursoApi {
     public CursoDetailsResponseDto findById(UUID id) {
         return cursoService.findById(id);
     }
+
+    @Override
+    public CursoDetailsResponseDto update(UUID id, CreateCursoDto createCursoDto) {
+        return cursoService.update(id, createCursoDto);
+    }
 }

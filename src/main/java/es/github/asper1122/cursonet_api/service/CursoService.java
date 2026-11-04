@@ -14,4 +14,6 @@ public interface CursoService {
     Page<CursoResponseDto> findAll(int page, int size);
 
     CursoDetailsResponseDto findById(UUID id);
+
+    CursoDetailsResponseDto update(UUID id, CreateCursoDto createCursoDto);
 }

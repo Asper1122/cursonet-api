@@ -5,6 +5,7 @@ import es.github.asper1122.cursonet_api.dto.curso.CursoDetailsResponseDto;
 import es.github.asper1122.cursonet_api.dto.curso.CursoResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -122,5 +123,75 @@ public interface CursoApi {
             )
     })
     @GetMapping("/{id}")
-    CursoDetailsResponseDto findById(@PathVariable UUID id);
+    CursoDetailsResponseDto findById(
+            @Parameter(in = ParameterIn.PATH, required = true, description = "Identificador del curso a buscar")
+            @PathVariable UUID id);
+
+
+    @Operation(summary = "Actualización de un curso registrado")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Se ha actualizado el curso correctamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CursoDetailsResponseDto.class),
+                            examples = {
+                                    @ExampleObject("""
+                                            {
+                                                "id": "96c52fc6-0f6c-49db-a911-9b77cb70d0da",
+                                                "nombre": "Fundamentos de la programación",
+                                                "resumen": "En este curso aprenderás los fundamentos básicos de la programación, como la orientación a objetos, y las patate y\\n las burgueeses"
+                                            }
+                                            """)
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No se ha encontrado el curso a actualizar",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ProblemDetail.class),
+                            examples = {
+                                    @ExampleObject(value = """
+                                            {
+                                                "detail": "No se ha encontrado el curso con el id 96c52fc6-0f6c-49db-a911-9b77cb70d0da",
+                                                "instance": "/curso/96c52fc6-0f6c-49db-a911-9b77cb70d0da",
+                                                "status": 404,
+                                                "title": "Entidad no encontrada",
+                                                "type": "http://cursonet.com/errors/not-found",
+                                                "timestamp": "2026-11-04T02:59:14.359635700Z"
+                                            }
+                                            """)
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "El nombre a actualizar se encuentra en otro curso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ProblemDetail.class),
+                            examples = {
+                                    @ExampleObject(value = """
+                                            {
+                                                "detail": "Ya existe el curso con nombre: Alhora",
+                                                "instance": "/curso/25c29622-47d8-4a6c-841e-083a491d3fe3",
+                                                "status": 400,
+                                                "title": "Campo ya existente",
+                                                "type": "http://cursonet.com/errors/campo-existente",
+                                                "timestamp": "2026-11-04T03:56:14.391032600Z"
+                                            }
+                                            """)
+                            }
+                    )
+            )
+    })
+    @PutMapping("/{id}")
+    CursoDetailsResponseDto update(
+            @Parameter(in = ParameterIn.PATH, required = true, description = "Identificador del curso a actualizar")
+            @PathVariable UUID id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody
+            @RequestBody CreateCursoDto createCursoDto);
 }

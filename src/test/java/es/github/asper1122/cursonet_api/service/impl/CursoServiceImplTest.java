@@ -131,4 +131,87 @@ class CursoServiceImplTest {
                 () -> verify(cursoRepository, times(1)).findById(any(UUID.class))
         );
     }
+
+    @Test
+    void testUpdateOk() {
+        UUID cursoId = UUID.randomUUID();
+        Curso curso = CursoMapper.INSTANCE.toEntity(createCursoDto);
+        curso.setId(cursoId);
+
+        when(cursoRepository.findById(any(UUID.class))).thenReturn(Optional.of(curso));
+        when(cursoRepository.save(any(Curso.class))).thenReturn(curso);
+        when(cursoRepository.existsByNombre(anyString())).thenReturn(false);
+
+        CursoDetailsResponseDto response = cursoServiceImpl.update(cursoId, createCursoDto);
+
+        assertAll(
+                () -> assertNotNull(response),
+                () -> assertEquals(cursoId.toString(), response.id()),
+                () -> assertEquals(createCursoDto.nombre(), response.nombre()),
+                () -> assertEquals(createCursoDto.resumen(), response.resumen()),
+                () -> verify(cursoRepository, times(1)).findById(any(UUID.class)),
+                () -> verify(cursoRepository, times(1)).save(any(Curso.class)),
+                () -> verify(cursoRepository, times(0)).existsByNombre(anyString())
+        );
+    }
+
+    @Test
+    void testUpdateNameChanged() {
+        UUID cursoId = UUID.randomUUID();
+        Curso curso = CursoMapper.INSTANCE.toEntity(createCursoDto);
+        curso.setId(cursoId);
+        curso.setNombre("Cositas");
+
+        when(cursoRepository.findById(any(UUID.class))).thenReturn(Optional.of(curso));
+        when(cursoRepository.save(any(Curso.class))).thenReturn(curso);
+        when(cursoRepository.existsByNombre(anyString())).thenReturn(false);
+
+        CursoDetailsResponseDto response = cursoServiceImpl.update(cursoId, createCursoDto);
+
+        assertAll(
+                () -> assertNotNull(response),
+                () -> assertEquals(cursoId.toString(), response.id()),
+                () -> assertEquals(curso.getNombre(), response.nombre()),
+                () -> assertEquals(createCursoDto.resumen(), response.resumen()),
+                () -> verify(cursoRepository, times(1)).findById(any(UUID.class)),
+                () -> verify(cursoRepository, times(1)).save(any(Curso.class)),
+                () -> verify(cursoRepository, times(1)).existsByNombre(anyString())
+        );
+    }
+
+    @Test
+    void testUpdateNotFound() {
+        UUID cursoId = UUID.randomUUID();
+
+        when(cursoRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrowsExactly(NotFoundException.class, () -> cursoServiceImpl.update(cursoId, createCursoDto));
+
+        assertAll(
+                () -> assertNotNull(exception),
+                () -> verify(cursoRepository, times(1)).findById(any(UUID.class)),
+                () -> verify(cursoRepository, times(0)).existsByNombre(anyString()),
+                () -> verify(cursoRepository, times(0)).save(any(Curso.class))
+        );
+    }
+
+    @Test
+    void testUpdateAlreadyExists() {
+        UUID cursoId = UUID.randomUUID();
+        Curso curso = CursoMapper.INSTANCE.toEntity(createCursoDto);
+        curso.setId(cursoId);
+        curso.setNombre("Cositas");
+
+        when(cursoRepository.findById(any(UUID.class))).thenReturn(Optional.of(curso));
+        when(cursoRepository.existsByNombre(anyString())).thenReturn(true);
+
+        AlreadyExistsException exception = assertThrowsExactly(AlreadyExistsException.class, () -> cursoServiceImpl.update(cursoId, createCursoDto));
+
+        assertAll(
+                () -> assertNotNull(exception),
+                () -> verify(cursoRepository, times(1)).findById(any(UUID.class)),
+                () -> verify(cursoRepository, times(1)).existsByNombre(anyString()),
+                () -> verify(cursoRepository, times(0)).save(any(Curso.class))
+        );
+    }
 }
